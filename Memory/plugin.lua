@@ -127,7 +127,7 @@ end
 
 function memory.correctDisplacement(limit, offset) --will not work if there's an ultra large number at the end
     local limit = limit or 0 --where the memory ends
-    local offset = offset or -10000002 --SVs will return with StartTime = offset and offset + 10000
+    local offset = offset or -10000002 --SVs will return with StartTime = offset and offset + 1
 
     local currentsvs = {}
     table.insert(currentsvs, getScrollVelocityAtExactly(offset))
