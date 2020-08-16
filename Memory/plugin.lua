@@ -9,7 +9,7 @@ function memory.write(offset, data, step, mirror)
         return(offset) --return same offset to use since nothing is written
     end
 
-    step = step or 1 --non-int step will be fine when utils.CreateScrollVelocity() accepts floats for StartTime
+    step = step or 1
     mirror = mirror or false --setting mirror to true causes effect of sv to be (mostly) negated by an equal and opposite sv and then a 1x sv is placed
 
     if type(data) == "number" then
@@ -57,18 +57,17 @@ function memory.read(start, stop, step)
 
     step = step or 1 --step indicated which svs are for data and which are for mirroring
     stop = stop or start --stop defaults to start, so without a stop provided, function returns one item
+
     local selection = {}
-    local x
     for _, sv in pairs(memory.search(start, stop)) do
-        if not x then
-            x = sv.StartTime - 1 --assume first sv is actual data
-        end
-        if (sv.StartTime - x) % step == 0 then --by default, anything without integer starttime is not included
-            selection[sv.StartTime - x] = sv.Multiplier
+        if sv.StartTime % step == 0 then --by default, anything without integer starttime is not included
+            table.insert(selection, sv.Multiplier)
         end
     end
     if #selection == 1 then --if table of only one element
         return(selection[1]) --return element
+    elseif #selection == 0 then
+        return(nil)
     else --otherwise
         return(selection) --return table of elements
     end
@@ -80,24 +79,22 @@ function memory.delete(start, stop, step)
     end
 
     step = step or 1
-    stop = stop or start + 2 * MEMORY_INCREMENT
+    stop = stop or start
 
     local svs = memory.search(start, stop)
     local selection = {}
-    local x
 
     for _, sv in pairs(svs) do
-        if not x then
-            x = sv.StartTime - 1
-        end
-        if (sv.StartTime - x) % step == 0 then
-            selection[sv.StartTime - x] = sv.Multiplier
+        if sv.StartTime % step == 0 then
+            table.insert(selection, sv.Multiplier)
         end
     end
 
     actions.RemoveScrollVelocityBatch(svs)
     if #selection == 1 then --if table of only one element
         return(selection[1]) --return element
+    elseif #selection == 0 then
+        return(nil)
     else --otherwise
         return(selection) --return table of elements
     end
@@ -143,6 +140,8 @@ function getScrollVelocityAtExactly(time)
         return(currentsv)
     end
 end
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function tableToString(table)
     local result = ""
